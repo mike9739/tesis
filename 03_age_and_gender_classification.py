@@ -36,7 +36,7 @@ def read_users(file):
     users = []
     with open(file) as content_file:
         for line in content_file:
-            users.append(int(line.strip()))
+            users.append(line.strip())
     return users
 
 def read_labels(file, labels_names):
@@ -44,6 +44,11 @@ def read_labels(file, labels_names):
     with open(file) as content_file:
         for line in content_file:
             category = line.strip()
+            if(category == 'secundaria' or category == 'preparatoria'):
+                category='media'
+            else:
+                category = 'superior'
+            
             label.append(labels_names.index(category))
     return label
 
@@ -51,12 +56,11 @@ def clean_words(words, stop_words):
     text = ' '.join([word for word in words if len(word)>2 and len(word)<35 and word not in stop_words])
     return text
 
-def read_text_data_with_emos(lang, text_file, emo_file):
+def read_text_data_with_emos(text_file, emo_file):
     data = []
-    if lang == 'spa':
-        stop_words = stopwords.words('spanish')
-    elif lang == 'eng':
-        stop_words = stopwords.words('english')
+   
+    stop_words = stopwords.words('spanish')
+   
     with open(text_file) as text_content, open(emo_file) as emo_content:
         for text_line, emo_line in zip(text_content, emo_content):
             words = text_line.rstrip().split()
@@ -73,12 +77,11 @@ def read_emos(emo_file):
             data.append(emo)
     return data
 
-def read_text_data(lang, file):
+def read_text_data(file):
     data = []
-    if lang == 'spa':
-        stop_words = stopwords.words('spanish')
-    elif lang == 'eng':
-        stop_words = stopwords.words('english')
+    
+    stop_words = stopwords.words('spanish')
+   
     with open(file) as content_file:
         for line in content_file:
             words = line.rstrip().split()
@@ -127,7 +130,7 @@ def roc_auc_multiclass(label_test, predicted):
 
 lang = 'spa'
 year = 2015
-main_dir = 'C:/Users/migu_/Documents/projects/thesis/'
+main_dir = '/home/miguel/Documentos/tesis/'
 prob = ''  
 labels_file = main_dir+'nivel_educativo.txt'
 words_file = main_dir+'DataSetTest_words.txt'
@@ -137,22 +140,18 @@ hashs_file = main_dir+'DataSetTest_hashtags.txt'
 ats_file = main_dir+'DataSetTest_ats.txt'
 emo_file = main_dir+'DataSetTest_emoticons.txt'
 links_file = main_dir+'DataSetTest_links.txt'
-if prob == 'gender':
-    labels_names = ['m', 'f']
-else:
-    if year == 2015:
-        labels_names = ['secundaria', 'preparatoria', 'licenciatura']
+labels_names = ['media', 'superior']
  
  
 
 
 labels_list = read_labels(labels_file, labels_names)
-#users_list = read_users(users_file)
+users_list = read_users(users_file)
 corpus = []
-corpus = read_text_data(lang, words_file)
+corpus = read_text_data( words_file)
 #corpus = read_text_data_with_emos(lang, words_file, emo_file)
 #corpus = read_emos(emo_file)
-#corpus, labels_list = group_per_user(corpus, labels_list, users_list)
+corpus, labels_list = group_per_user(corpus, labels_list, users_list)
 labels = np.asarray(labels_list)
 labels_set = set(labels_list)
 
@@ -161,10 +160,10 @@ labels_set = set(labels_list)
 
 
 clf_nb = MultinomialNB()
-clf_svm = svm.LinearSVC(C=10)
-clf_log = LogisticRegression(C=100, penalty='l2', solver='liblinear')
-clf_rdf = RandomForestClassifier()
-clf_knn = KNeighborsClassifier()
+#clf_svm = svm.LinearSVC(C=10)
+#clf_log = LogisticRegression(C=100, penalty='l2', solver='liblinear')
+#clf_rdf = RandomForestClassifier()
+#clf_knn = KNeighborsClassifier()
 
 #clf = clf_log
 
@@ -176,6 +175,7 @@ scores_recall_macro = []
 scores_f1_macro = []
 scores_kapha = [] 
 scores_roc = []
+
 
 i = 0
 
@@ -191,9 +191,9 @@ for train_index, test_index in skf.split(corpus, labels):
     
     
     #ks = [1, 2, 3, 5, 10]
-    cs = [0.01, 0.1, 1, 10, 100]
-    best_c = 0
-    best_score = 0
+    #cs = [0.01, 0.1, 1, 10, 100]
+    #best_c = 0
+    #best_score = 0
     #best_k = 0
 
 #    for k in ks:
@@ -240,11 +240,11 @@ end = time.time()
     
 #skf = StratifiedKFold(n_splits=10, random_state=3)
 #scores_txt = cross_val_score(clf, corpus_tfidf, labels, scoring='f1_macro', cv=skf)
-print(prob[0].upper()+prob[1:]+' Accuracy: %0.2f (+/- %0.2f)' % (np.mean(scores_accuracy), np.std(scores_accuracy) * 2))
-print(prob[0].upper()+prob[1:]+' Precssion: %0.2f (+/- %0.2f)' % (np.mean(scores_precission_macro), np.std(scores_precission_macro) * 2))
-print(prob[0].upper()+prob[1:]+' Recall: %0.2f (+/- %0.2f)' % (np.mean(scores_recall_macro), np.std(scores_recall_macro) * 2))
-print(prob[0].upper()+prob[1:]+' F1: %0.2f (+/- %0.2f)' % (np.mean(scores_f1_macro), np.std(scores_f1_macro) * 2))
-print(prob[0].upper()+prob[1:]+' Kapha: %0.2f (+/- %0.2f)' % (np.mean(scores_kapha), np.std(scores_kapha) * 2))
+print(' Accuracy: %0.2f (+/- %0.2f)' % (np.mean(scores_accuracy), np.std(scores_accuracy) * 2))
+print(' Precssion: %0.2f (+/- %0.2f)' % (np.mean(scores_precission_macro), np.std(scores_precission_macro) * 2))
+print(' Recall: %0.2f (+/- %0.2f)' % (np.mean(scores_recall_macro), np.std(scores_recall_macro) * 2))
+print(' F1: %0.2f (+/- %0.2f)' % (np.mean(scores_f1_macro), np.std(scores_f1_macro) * 2))
+print(' Kapha: %0.2f (+/- %0.2f)' % (np.mean(scores_kapha), np.std(scores_kapha) * 2))
 #print(prob[0].upper()+prob[1:]+' ROC: %0.2f (+/- %0.2f)' % (np.mean(scores_roc), np.std(scores_roc) * 2))
 print("Time of training + testing: %0.2f " % (end - start))
 
