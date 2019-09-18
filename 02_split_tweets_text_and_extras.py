@@ -78,7 +78,7 @@ link_file = main_dir+'/'+dataSet+'_links.txt'
 
 dataSet='DataSetTest'
 
-main_dir='/home/miguel/Documentos/thesis/'
+main_dir='/home/miguel/Documentos/tesis/'
 text_file = main_dir+'/tweets.txt'
 words_file = main_dir+'/'+dataSet+'_words.txt'
 emo_file = main_dir+'/'+dataSet+'_emoticons.txt'
