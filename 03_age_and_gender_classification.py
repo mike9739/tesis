@@ -190,29 +190,29 @@ for train_index, test_index in skf.split(corpus, labels):
     train_tfidf = vec.fit_transform(data_train)
     
     
-    ks = [1, 2, 3, 5, 10]
-    cs = [0.01, 0.1, 1, 10, 100]
-    best_c = 0
-    best_score = 0
-    best_k = 0
-
-    for k in ks:
-        #print(c)
-        #warnings.filterwarnings('ignore')
-        clf_inner = KNeighborsClassifier(n_neighbors=k)
-        sub_skf = StratifiedKFold(n_splits=3, random_state=0)
-        scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
-        #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
-        score = np.mean(scores_inner)
-        #print(score)
-        if score > best_score:
-            best_score = score
-            best_k = k
+#    ks = [1, 2, 3, 5, 10]
+#    cs = [0.01, 0.1, 1, 10, 100]
+#    best_c = 0
+#    best_score = 0
+#    best_k = 0
+#
+#    for k in ks:
+#        #print(c)
+#        #warnings.filterwarnings('ignore')
+#        clf_inner = KNeighborsClassifier(n_neighbors=k)
+#        sub_skf = StratifiedKFold(n_splits=3, random_state=0)
+#        scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
+#        #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
+#        score = np.mean(scores_inner)
+#        #print(score)
+#        if score > best_score:
+#            best_score = score
+#            best_k = k
             
     clf =LogisticRegression(C=100, penalty='l2', solver='liblinear')
-    #clf = ##KNeighborsClassifier(n_neighbors=best_k)
+    #clf = KNeighborsClassifier(n_neighbors=best_k)
     #clf = MultinomialNB()
-    #clf = RandomForestClassifier()
+   # clf = RandomForestClassifier()
     clf.fit(train_tfidf, labels_train)
     test_tfidf = vec.transform(data_test)
     predicted = clf.predict(test_tfidf)
