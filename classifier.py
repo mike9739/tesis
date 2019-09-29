@@ -7,40 +7,41 @@ diccionario_genero = {}
 
 
 
-reader = pd.read_csv('data/AllUsers.csv')
+reader = pd.read_csv('AllUsers.csv')
 usernames = reader['username'].values
 education = reader['niveleducativo'].values
 genders = reader['Sexo'].values
 
 diccionario_genero = dict(zip(usernames,genders))
 diccionario_niveleducativo = dict(zip(usernames,education))
-# reader_names = list(pd.read_csv('Dataset.csv'))
-# for linea in reader_names:
+#reader_names = list(pd.read_csv('Dataset.csv'))
+#for linea in reader_names:
 #     linea = linea.rstrip('\n')
 #     with open('names.txt','w') as names:
 #         names.write(linea)
 
 
-
+contar=0
 ##se lee el archivo con los nombres de usuario
-with open('names.txt','r') as nombres:
-    for linea in nombres.readlines():
+with open('names.txt','r') as nombres,open('gender.txt','w' ) as gender:
+    for linea in nombres:
+        contar = contar+1
         writter=''
         linea = linea.rstrip('\n')
         writter=diccionario_genero[linea]
         writter+='\n'
-        with open('gender.txt','a' ) as gender:
-                gender.write(writter)       
+        gender.write(writter)
 
-with open('names.txt','r') as nombres:
+with open('names.txt','r') as nombres,open('nivel_educativo.txt','w' ) as nivel:
     for linea in nombres.readlines():
         writter2=''
         linea = linea.rstrip('\n')
         writter2=diccionario_niveleducativo[linea]
         writter2+='\n'
-        with open('nivel_educativo.txt','a' ) as gender:
-                    writter=str(writter2)
-                    gender.write(writter2)            
+        nivel.write(writter2)
+        
+       
+            
 
 # print(comparador)
 

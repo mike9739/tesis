@@ -161,7 +161,7 @@ labels_set = set(labels_list)
 
 #clf_nb = MultinomialNB()
 #clf_svm = svm.LinearSVC(C=10)
-clf_log = LogisticRegression(C=100, penalty='l2', solver='liblinear')
+#clf_log = LogisticRegression(C=100, penalty='l2', solver='liblinear')
 #clf_rdf = RandomForestClassifier()
 #clf_knn = KNeighborsClassifier()
 
@@ -192,9 +192,12 @@ for train_index, test_index in skf.split(corpus, labels):
     
 #    ks = [1, 2, 3, 5, 10]
 #    cs = [0.01, 0.1, 1, 10, 100]
+#    ts = [5,10,15,20]
 #    best_c = 0
 #    best_score = 0
 #    best_k = 0
+#    best_t=0   
+#    
 #
 #    for k in ks:
 #        #print(c)
@@ -209,10 +212,11 @@ for train_index, test_index in skf.split(corpus, labels):
 #            best_score = score
 #            best_k = k
             
-    clf =LogisticRegression(C=100, penalty='l2', solver='liblinear')
+    #clf =LogisticRegression(C=best_c, penalty='l2', solver='liblinear')
     #clf = KNeighborsClassifier(n_neighbors=best_k)
-    #clf = MultinomialNB()
-   # clf = RandomForestClassifier()
+    clf = MultinomialNB()
+   # clf = RandomForestClassifier(n_estimators=best_t)
+   #clf = svm.LinearSVC(C=best_c)
     clf.fit(train_tfidf, labels_train)
     test_tfidf = vec.transform(data_test)
     predicted = clf.predict(test_tfidf)
@@ -222,9 +226,10 @@ for train_index, test_index in skf.split(corpus, labels):
     f1_macro = metrics.f1_score(labels_test, predicted, average='macro')
     kapha = metrics.cohen_kappa_score(labels_test, predicted)
     #roc = metrics.roc_curve(labels_test, predicted)
+    roc = metrics.roc_auc_score(labels_test,predicted)
     #roc = roc_auc_multiclass(labels_test, predicted)
     
-    #print(metrics.confusion_matrix(labels_test, predicted))
+    print(metrics.confusion_matrix(labels_test, predicted))
     
     #scores.append(f1_macro)
     scores_accuracy.append(accuracy)
@@ -232,7 +237,7 @@ for train_index, test_index in skf.split(corpus, labels):
     scores_recall_macro.append(recall_macro)
     scores_f1_macro.append(f1_macro)
     scores_kapha.append(kapha)
-    #scores_roc.append(roc)
+    scores_roc.append(roc)
     i += 1
 
 end = time.time()
@@ -245,7 +250,7 @@ print(' Precssion: %0.2f (+/- %0.2f)' % (np.mean(scores_precission_macro), np.st
 print(' Recall: %0.2f (+/- %0.2f)' % (np.mean(scores_recall_macro), np.std(scores_recall_macro) * 2))
 print(' F1: %0.2f (+/- %0.2f)' % (np.mean(scores_f1_macro), np.std(scores_f1_macro) * 2))
 print(' Kapha: %0.2f (+/- %0.2f)' % (np.mean(scores_kapha), np.std(scores_kapha) * 2))
-#print(prob[0].upper()+prob[1:]+' ROC: %0.2f (+/- %0.2f)' % (np.mean(scores_roc), np.std(scores_roc) * 2))
+print(' ROC: %0.2f (+/- %0.2f)' % (np.mean(scores_roc), np.std(scores_roc) * 2))
 print("Time of training + testing: %0.2f " % (end - start))
 
 #n_text = len(corpus)
