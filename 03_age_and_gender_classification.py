@@ -148,8 +148,8 @@ labels_names = ['media', 'superior']
 labels_list = read_labels(labels_file, labels_names)
 users_list = read_users(users_file)
 corpus = []
-corpus = read_text_data( words_file)
-#corpus = read_text_data_with_emos(lang, words_file, emo_file)
+#corpus = read_text_data( words_file)
+corpus = read_text_data_with_emos(words_file, emo_file)
 #corpus = read_emos(emo_file)
 corpus, labels_list = group_per_user(corpus, labels_list, users_list)
 labels = np.asarray(labels_list)
@@ -190,33 +190,33 @@ for train_index, test_index in skf.split(corpus, labels):
     train_tfidf = vec.fit_transform(data_train)
     
     
-#    ks = [1, 2, 3, 5, 10]
+    ks = [1, 2, 3, 5, 10]
 #    cs = [0.01, 0.1, 1, 10, 100]
-#    ts = [5,10,15,20]
+    ts = [5,10,15,20]
 #    best_c = 0
-#    best_score = 0
-#    best_k = 0
-#    best_t=0   
+    best_score = 0
+    best_k = 0
+    best_t=0   
 #    
 #
-#    for k in ks:
-#        #print(c)
-#        #warnings.filterwarnings('ignore')
-#        clf_inner = KNeighborsClassifier(n_neighbors=k)
-#        sub_skf = StratifiedKFold(n_splits=3, random_state=0)
-#        scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
-#        #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
-#        score = np.mean(scores_inner)
-#        #print(score)
-#        if score > best_score:
-#            best_score = score
-#            best_k = k
-            
+    for k in ts:
+        #print(c)
+        #warnings.filterwarnings('ignore')
+        clf_inner = RandomForestClassifier(n_estimators=k)
+        sub_skf = StratifiedKFold(n_splits=3, random_state=0)
+        scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
+        #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
+        score = np.mean(scores_inner)
+        #print(score)
+        if score > best_score:
+            best_score = score
+            best_t = k
+#            
     #clf =LogisticRegression(C=best_c, penalty='l2', solver='liblinear')
     #clf = KNeighborsClassifier(n_neighbors=best_k)
-    clf = MultinomialNB()
-   # clf = RandomForestClassifier(n_estimators=best_t)
-   #clf = svm.LinearSVC(C=best_c)
+    #clf = MultinomialNB()
+    clf = RandomForestClassifier(n_estimators=best_t)
+    #clf = svm.LinearSVC(C=best_c)
     clf.fit(train_tfidf, labels_train)
     test_tfidf = vec.transform(data_test)
     predicted = clf.predict(test_tfidf)
