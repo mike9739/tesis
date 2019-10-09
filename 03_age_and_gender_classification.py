@@ -22,8 +22,6 @@ import numpy as np
 import time
 #import warnings
 
-
-
 def classification_report_with_f1_score(y_true, y_pred):
     print(metrics.confusion_matrix(y_true, y_pred))
     #print(classification_report(y_true, y_pred)) # print classification report
@@ -126,6 +124,21 @@ def roc_auc_multiclass(label_test, predicted):
     y_test = lb.transform(label_test)
     y_pred = lb.transform(predicted)
     return metrics.roc_auc_score(y_test, y_pred, average='macro')
+
+def read_text_data_with_everything(text_file, emo_file,hash_file,words_file,ats_file,tweets_file):
+    data = []
+   
+    stop_words = stopwords.words('spanish')
+   
+    with open(text_file) as text_content, open(emo_file) as emo_content,open(hash_file) as hash_content,open(tweets_file) as tweets_content,open(ats_file) as ats_content, open(words_file) as word_content:
+        for text_line, emo_line,hash_line,tweets_line,ats_line,words_line in zip(text_content, emo_content,hash_content,tweets_content,ats_content,word_content):
+            words = text_line.rstrip().split()
+            text = clean_words(words, stop_words)
+            text += ' '+emo_line.rstrip()
+            data.append(text)
+    return data
+
+
     
 
 lang = 'spa'
@@ -148,7 +161,7 @@ labels_names = ['media', 'superior']
 labels_list = read_labels(labels_file, labels_names)
 users_list = read_users(users_file)
 corpus = []
-corpus = read_text_data( tweets_file)
+corpus = read_text_data( ats_file)
 #corpus = read_text_data_with_emos(words_file, emo_file)
 #corpus = read_emos(emo_file)
 corpus, labels_list = group_per_user(corpus, labels_list, users_list)
@@ -199,24 +212,24 @@ for train_index, test_index in skf.split(corpus, labels):
     best_t=0   
 #    
 #
-    for k in cs:
-        #print(c)
-        #warnings.filterwarnings('ignore')
-        clf_inner = svm.LinearSVC(C=k)
-        sub_skf = StratifiedKFold(n_splits=3, random_state=0)
-        scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
-        #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
-        score = np.mean(scores_inner)
-        #print(score)
-        if score > best_score:
-            best_score = score
-            best_c = k
-#            
+#     for k in ks:
+#        #print(c)
+#        #warnings.filterwarnings('ignore')
+#        clf_inner = KNeighborsClassifier(n_neighbors=k)
+#        sub_skf = StratifiedKFold(n_splits=3, random_state=0)
+#        scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
+#        #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
+#        score = np.mean(scores_inner)
+#        #print(score)
+#        if score > best_score:
+#            best_score = score
+#            best_k = k
+# #            
     #clf =LogisticRegression(C=best_c, penalty='l2', solver='liblinear')
     #clf = KNeighborsClassifier(n_neighbors=best_k)
-    #clf = MultinomialNB()
+    clf = MultinomialNB()
     #clf = RandomForestClassifier(n_estimators=best_t)
-    clf = svm.LinearSVC(C=best_c)
+    #clf = svm.LinearSVC(C=best_c)
     clf.fit(train_tfidf, labels_train)
     test_tfidf = vec.transform(data_test)
     predicted = clf.predict(test_tfidf)
