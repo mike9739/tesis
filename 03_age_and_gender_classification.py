@@ -212,19 +212,19 @@ for train_index, test_index in skf.split(corpus, labels):
     best_t=0   
 #    
 #
-#     for k in ks:
-#        #print(c)
-#        #warnings.filterwarnings('ignore')
-#        clf_inner = KNeighborsClassifier(n_neighbors=k)
-#        sub_skf = StratifiedKFold(n_splits=3, random_state=0)
-#        scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
-#        #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
-#        score = np.mean(scores_inner)
-#        #print(score)
-#        if score > best_score:
-#            best_score = score
-#            best_k = k
-# #            
+    # for k in ks:
+    #    #print(c)
+    #    #warnings.filterwarnings('ignore')
+    #    clf_inner = KNeighborsClassifier(n_neighbors=k)
+    #    sub_skf = StratifiedKFold(n_splits=3, random_state=0)
+    #    scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
+    #    #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
+    #    score = np.mean(scores_inner)
+    #    #print(score)
+    #    if score > best_score:
+    #        best_score = score
+    #        best_k = k
+#            
     #clf =LogisticRegression(C=best_c, penalty='l2', solver='liblinear')
     #clf = KNeighborsClassifier(n_neighbors=best_k)
     clf = MultinomialNB()
