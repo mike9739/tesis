@@ -86,7 +86,14 @@ def read_text_data(file):
             text = clean_words(words, stop_words)
             data.append(text)
     return data
-
+def read_avbs(file):
+    data = []   
+    with open(file) as content_file:
+        for line in content_file:
+            abvs = line.rstrip().split()
+            abvs = str(abvs)
+            data.append(abvs)
+    return data
 def read_extra_data(n, file):
     data = []
     with open(file) as content_file:
@@ -130,11 +137,11 @@ def read_text_data_with_everything(text_file, emo_file,hash_file,words_file,ats_
    
     stop_words = stopwords.words('spanish')
    
-    with open(text_file) as text_content, open(emo_file) as emo_content,open(hash_file) as hash_content,open(tweets_file) as tweets_content,open(ats_file) as ats_content, open(words_file) as word_content:
-        for text_line, emo_line,hash_line,tweets_line,ats_line,words_line in zip(text_content, emo_content,hash_content,tweets_content,ats_content,word_content):
-            words = text_line.rstrip().split()
+    with  open(emo_file) as emo_content,open(hash_file) as hash_content,open(ats_file) as ats_content, open(words_file) as word_content:
+        for  emo_line,hash_line,ats_line,words_line in zip(emo_content,hash_content,ats_content,word_content):
+            words = words_line.rstrip().split()
             text = clean_words(words, stop_words)
-            text += ' '+emo_line.rstrip()
+            text += ' '+emo_line.rstrip()+' '+hash_line.rstrip()+' '+ats_line.rstrip()
             data.append(text)
     return data
 
@@ -153,6 +160,7 @@ hashs_file = main_dir+'DataSetTest_hashtags.txt'
 ats_file = main_dir+'DataSetTest_ats.txt'
 emo_file = main_dir+'DataSetTest_emoticons.txt'
 links_file = main_dir+'DataSetTest_links.txt'
+abvs_file = main_dir+'abvs.txt'
 labels_names = ['media', 'superior']
  
  
@@ -161,9 +169,10 @@ labels_names = ['media', 'superior']
 labels_list = read_labels(labels_file, labels_names)
 users_list = read_users(users_file)
 corpus = []
-corpus = read_text_data( ats_file)
+#corpus = read_text_data( links_file)
+#corpus = read_avbs(abvs_file)
 #corpus = read_text_data_with_emos(words_file, emo_file)
-#corpus = read_emos(emo_file)
+corpus = read_emos(hashs_file)
 corpus, labels_list = group_per_user(corpus, labels_list, users_list)
 labels = np.asarray(labels_list)
 labels_set = set(labels_list)
@@ -215,7 +224,7 @@ for train_index, test_index in skf.split(corpus, labels):
     # for k in ks:
     #    #print(c)
     #    #warnings.filterwarnings('ignore')
-    #    clf_inner = KNeighborsClassifier(n_neighbors=k)
+    #    clf_inner =  KNeighborsClassifier(n_neighbors=k)
     #    sub_skf = StratifiedKFold(n_splits=3, random_state=0)
     #    scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
     #    #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
@@ -301,3 +310,4 @@ print("Time of training + testing: %0.2f " % (end - start))
 #    data_train, data_test = corpus_tfidf[train_index], corpus_tfidf[test_index]
 #    labels_train, labels_test = labels[train_index], labels[test_index]
 #    break
+print('forest')
