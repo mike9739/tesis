@@ -22,6 +22,16 @@ import numpy as np
 import time
 #import warnings
 
+
+def read_stopwords(file):
+	sw = []
+	with open(file, 'r', encoding = 'utf-8') as reader:
+		for line in reader:
+			line = line.rstrip()
+			sw.append(line)
+	return set(sw)
+        
+       
 def classification_report_with_f1_score(y_true, y_pred):
     print(metrics.confusion_matrix(y_true, y_pred))
     #print(classification_report(y_true, y_pred)) # print classification report
@@ -75,10 +85,11 @@ def read_emos(emo_file):
             data.append(emo)
     return data
 
-def read_text_data(file):
+def read_text_data(file,spa_sw):
     data = []
     
-    stop_words = stopwords.words('spanish')
+    stop_words = set(stopwords.words('spanish'))
+    stop_words.update(spa_sw)
    
     with open(file) as content_file:
         for line in content_file:
@@ -90,8 +101,7 @@ def read_avbs(file):
     data = []   
     with open(file) as content_file:
         for line in content_file:
-            abvs = line.rstrip().split()
-            abvs = str(abvs)
+            abvs = line.rstrip()
             data.append(abvs)
     return data
 def read_extra_data(n, file):
@@ -132,16 +142,18 @@ def roc_auc_multiclass(label_test, predicted):
     y_pred = lb.transform(predicted)
     return metrics.roc_auc_score(y_test, y_pred, average='macro')
 
-def read_text_data_with_everything(text_file, emo_file,hash_file,words_file,ats_file,tweets_file):
+def read_text_data_with_everything(emo_file,hash_file,words_file,ats_file,links_file):
     data = []
    
-    stop_words = stopwords.words('spanish')
+    stop_words = set(stopwords.words('spanish'))
+    stop_words.update(spa_sw)
    
-    with  open(emo_file) as emo_content,open(hash_file) as hash_content,open(ats_file) as ats_content, open(words_file) as word_content:
-        for  emo_line,hash_line,ats_line,words_line in zip(emo_content,hash_content,ats_content,word_content):
+   
+    with  open(emo_file) as emo_content,open(links_file) as links,open(hash_file) as hash_content,open(ats_file) as ats_content, open(words_file) as word_content:
+        for  emo_line,hash_line,ats_line,words_line,links_line in zip(emo_content,hash_content,ats_content,word_content,links):
             words = words_line.rstrip().split()
             text = clean_words(words, stop_words)
-            text += ' '+emo_line.rstrip()+' '+hash_line.rstrip()+' '+ats_line.rstrip()
+            text += ' '+emo_line.rstrip()+' '+hash_line.rstrip()+' '+ats_line.rstrip() + ' '+links_line.rstrip()
             data.append(text)
     return data
 
@@ -162,6 +174,8 @@ emo_file = main_dir+'DataSetTest_emoticons.txt'
 links_file = main_dir+'DataSetTest_links.txt'
 abvs_file = main_dir+'abvs.txt'
 labels_names = ['media', 'superior']
+sw_file = main_dir+'spanish_stopwords.txt'
+spa_sw = read_stopwords(sw_file)
  
  
 
@@ -169,10 +183,11 @@ labels_names = ['media', 'superior']
 labels_list = read_labels(labels_file, labels_names)
 users_list = read_users(users_file)
 corpus = []
-#corpus = read_text_data( links_file)
+#corpus = read_text_data( words_file,spa_sw)
 #corpus = read_avbs(abvs_file)
 #corpus = read_text_data_with_emos(words_file, emo_file)
-corpus = read_emos(hashs_file)
+#corpus = read_emos(hashs_file)
+corpus = read_text_data_with_everything(emo_file,hashs_file,words_file,ats_file,links_file)
 corpus, labels_list = group_per_user(corpus, labels_list, users_list)
 labels = np.asarray(labels_list)
 labels_set = set(labels_list)
@@ -219,24 +234,24 @@ for train_index, test_index in skf.split(corpus, labels):
     best_score = 0
     best_k = 0
     best_t=0   
-#    
-#
-    # for k in ks:
-    #    #print(c)
-    #    #warnings.filterwarnings('ignore')
-    #    clf_inner =  KNeighborsClassifier(n_neighbors=k)
-    #    sub_skf = StratifiedKFold(n_splits=3, random_state=0)
-    #    scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
-    #    #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
-    #    score = np.mean(scores_inner)
-    #    #print(score)
-    #    if score > best_score:
-    #        best_score = score
-    #        best_k = k
+   
+
+    for k in cs:
+       #print(c)
+       #warnings.filterwarnings('ignore')
+       clf_inner = LogisticRegression(C=k, penalty='l2', solver='liblinear')
+       sub_skf = StratifiedKFold(n_splits=3, random_state=0)
+       scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring='f1_macro', cv=sub_skf)
+       #scores_inner = cross_val_score(clf_inner, train_tfidf, labels_train, scoring=make_scorer(classification_report_with_f1_score), cv=sub_skf)
+       score = np.mean(scores_inner)
+       #print(score)
+       if score > best_score:
+           best_score = score
+           best_c = k
 #            
-    #clf =LogisticRegression(C=best_c, penalty='l2', solver='liblinear')
+    clf =LogisticRegression(C=best_c, penalty='l2', solver='liblinear')
     #clf = KNeighborsClassifier(n_neighbors=best_k)
-    clf = MultinomialNB()
+    #clf = MultinomialNB()
     #clf = RandomForestClassifier(n_estimators=best_t)
     #clf = svm.LinearSVC(C=best_c)
     clf.fit(train_tfidf, labels_train)
